@@ -1,0 +1,8 @@
+{
+  "name": "sap project 1",
+  "description": "Autonomous Supply Chain Command Center with live geopolitical intelligence, cross-border tariff analysis, cold-chain integrity, and automated emergency re-sourcing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
