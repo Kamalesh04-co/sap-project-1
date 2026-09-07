@@ -189,3 +189,21 @@ export interface AuthResponse {
   message?: string;
   securityAudit?: AuthAuditLog;
 }
+
+export const DEFAULT_OFFICER: UserOfficer = {
+  id: 'kamaleshkk001@gmail.com',
+  officerId: 'KAMALESH-OPS-01',
+  name: 'Commander Kamalesh',
+  email: 'kamaleshkk001@gmail.com',
+  role: 'Director of Global Supply Security & Crisis Operations',
+  clearanceLevel: 'DEFCON 1 (TOP SECRET)',
+  department: 'Naval Intermodal Tactical Operations & Chokepoint Defense',
+  assignedJurisdictions: [
+    'Red Sea & Bab-el-Mandeb',
+    'Strait of Hormuz',
+    'Panama Canal Transit Enclave',
+    'Rotterdam / North Sea Corridors',
+  ],
+  lastLogin: new Date().toISOString(),
+  sessionToken: 'RR-DEFCON1-ACTIVE-SESSION-DEFAULT',
+};

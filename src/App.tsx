@@ -23,7 +23,8 @@ import {
   GeopoliticalAlert, 
   EmergencyProcurementOrder, 
   CryptographicAuthorization, 
-  UserOfficer 
+  UserOfficer,
+  DEFAULT_OFFICER
 } from './types';
 import { Header } from './components/Header';
 import { ThreatTicker } from './components/ThreatTicker';
@@ -39,10 +40,20 @@ import { LoginScreen } from './components/LoginScreen';
 import { SecurityProfileModal } from './components/SecurityProfileModal';
 
 export default function App() {
-  // Authentication State
-  const [currentUser, setCurrentUser] = useState<UserOfficer | null>(null);
-  const [authToken, setAuthToken] = useState<string | null>(null);
-  const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(true);
+  // Authentication State - Pre-initialized with valid session for instant seamless entry
+  const [currentUser, setCurrentUser] = useState<UserOfficer | null>(() => {
+    try {
+      const savedUser = localStorage.getItem('resilientroute_auth_user');
+      if (savedUser) return JSON.parse(savedUser);
+    } catch {
+      // ignore
+    }
+    return DEFAULT_OFFICER;
+  });
+  const [authToken, setAuthToken] = useState<string | null>(() => {
+    return localStorage.getItem('resilientroute_auth_token') || 'RR-DEFCON1-ACTIVE-SESSION-DEFAULT';
+  });
+  const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(false);
   const [isSecurityProfileOpen, setIsSecurityProfileOpen] = useState<boolean>(false);
 
   // Shipments & Alerts

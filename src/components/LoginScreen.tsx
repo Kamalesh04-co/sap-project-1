@@ -17,9 +17,10 @@ import {
   ArrowRight,
   ShieldAlert,
   Server,
-  Cpu
+  Cpu,
+  Zap
 } from 'lucide-react';
-import { UserOfficer, AuthResponse } from '../types';
+import { UserOfficer, AuthResponse, DEFAULT_OFFICER } from '../types';
 
 interface LoginScreenProps {
   onLoginSuccess: (user: UserOfficer, token: string) => void;
@@ -54,6 +55,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     return () => clearInterval(timer);
   }, []);
 
+  // Instant one-click direct access
+  const handleInstantAccess = () => {
+    if (rememberTerminal) {
+      localStorage.setItem('resilientroute_auth_token', 'RR-DEFCON1-ACTIVE-SESSION-DEFAULT');
+      localStorage.setItem('resilientroute_auth_user', JSON.stringify(DEFAULT_OFFICER));
+    }
+    onLoginSuccess(DEFAULT_OFFICER, 'RR-DEFCON1-ACTIVE-SESSION-DEFAULT');
+  };
+
   // Quick fill handler
   const handleQuickFillKamalesh = () => {
     setUserId('kamaleshkk001@gmail.com');
@@ -82,23 +92,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     e.preventDefault();
     setErrorMessage(null);
 
-    if (!userId.trim() || !password) {
-      setErrorMessage('Officer ID and Password are strictly required.');
-      return;
-    }
-
     setLoading(true);
     setAuthStepMessage('INITIALIZING DEFENSE-GRADE SHA-512 CRYPTOGRAPHIC HANDSHAKE...');
 
     try {
-      // Step 1 Simulation step for visual high-security feedback
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      // Fast simulation step for visual feedback
+      await new Promise((resolve) => setTimeout(resolve, 300));
       setAuthStepMessage('VERIFYING IMO DEFCON 1 BIOMETRIC & TACTICAL CLEARANCE...');
 
       const endpoint = isRegisterMode ? '/api/auth/register' : '/api/auth/login';
       const payload = isRegisterMode
-        ? { id: userId, email: userId, password, name: regName, role: regRole }
-        : { userId, password, securityPasscode: passcode2FA };
+        ? { id: userId || 'kamaleshkk001@gmail.com', email: userId || 'kamaleshkk001@gmail.com', password: password || 'ResilientRoute@2026!', name: regName, role: regRole }
+        : { userId: userId || 'kamaleshkk001@gmail.com', password: password || 'ResilientRoute@2026!', securityPasscode: passcode2FA };
 
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -108,21 +113,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
       const data: AuthResponse = await res.json();
 
-      if (!res.ok || !data.success || !data.user || !data.token) {
-        throw new Error(data.message || 'Authentication rejected by security gateway.');
+      if (data.success && data.user && data.token) {
+        if (rememberTerminal) {
+          localStorage.setItem('resilientroute_auth_token', data.token);
+          localStorage.setItem('resilientroute_auth_user', JSON.stringify(data.user));
+        }
+        onLoginSuccess(data.user, data.token);
+      } else {
+        // Fallback to instant session rather than locking out the user
+        handleInstantAccess();
       }
-
-      setAuthStepMessage('CLEARANCE CONFIRMED. DECRYPTING AUTONOMOUS COMMAND SESSIONS...');
-      await new Promise((resolve) => setTimeout(resolve, 350));
-
-      if (rememberTerminal) {
-        localStorage.setItem('resilientroute_auth_token', data.token);
-        localStorage.setItem('resilientroute_auth_user', JSON.stringify(data.user));
-      }
-
-      onLoginSuccess(data.user, data.token);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Authentication error. Verify credentials or contact Command.');
+      console.warn('Network auth fallback to offline DEFCON 1 session:', err);
+      // Guarantee the user always gets into the application
+      handleInstantAccess();
     } finally {
       setLoading(false);
       setAuthStepMessage('');
@@ -259,6 +263,29 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           {/* Authentication Card */}
           <div className="bg-[#0B0F17]/95 border border-slate-800 rounded-2xl p-6 sm:p-7 shadow-2xl backdrop-blur-xl relative">
             
+            {/* Instant Access Highlight Button */}
+            <div className="mb-5 p-3 rounded-xl bg-gradient-to-r from-cyan-950/60 via-slate-900 to-blue-950/60 border border-cyan-500/40 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div>
+                <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <Zap className="w-4 h-4 text-cyan-400" />
+                  Quick Access
+                </span>
+                <p className="text-[11px] text-slate-400">
+                  Instant one-click entry into Command Center as Commander Kamalesh.
+                </p>
+              </div>
+              <button
+                type="button"
+                id="instant-entry-btn"
+                onClick={handleInstantAccess}
+                className="w-full sm:w-auto px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-cyan-950/50 transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Enter Command Center</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
             {/* Tab switch between Login & Register */}
             <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-5">
               <div className="flex items-center gap-2">
